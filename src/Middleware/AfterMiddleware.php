@@ -72,24 +72,24 @@ class AfterMiddleware
             return $next($request);
         }
         $whiteSpaceRules = [
-            '/(\s)+/s' => '\\1',// shorten multiple whitespace sequences
-            "#>\s+<#" => ">\n<",  // Strip excess whitespace using new line
-            "#\n\s+<#" => "\n<",// strip excess whitespace using new line
-            '/\>[^\S ]+/s' => '>',
-            // Strip all whitespaces after tags, except space
-            '/[^\S ]+\</s' => '<',// strip whitespaces before tags, except space
-            /**
-             * '/\s+     # Match one or more whitespace characters
-             * (?!       # but only if it is impossible to match...
-             * [^<>]*   # any characters except angle brackets
-             * >        # followed by a closing bracket.
-             * )         # End of lookahead
-             * /x',
-             */
+            // '/(\s)+/s' => '\\1',// shorten multiple whitespace sequences
+            // "#>\s+<#" => ">\n<",  // Strip excess whitespace using new line
+            // "#\n\s+<#" => "\n<",// strip excess whitespace using new line
+            // '/\>[^\S ]+/s' => '>',
+            // // Strip all whitespaces after tags, except space
+            // '/[^\S ]+\</s' => '<',// strip whitespaces before tags, except space
+            // /**
+            //  * '/\s+     # Match one or more whitespace characters
+            //  * (?!       # but only if it is impossible to match...
+            //  * [^<>]*   # any characters except angle brackets
+            //  * >        # followed by a closing bracket.
+            //  * )         # End of lookahead
+            //  * /x',
+            //  */
 
-            //Remove all whitespaces except content between html tags.
-            //MOST DANGEROUS
-            //            '/\s+(?![^<>]*>)/x' => '',
+            // //Remove all whitespaces except content between html tags.
+            // //MOST DANGEROUS
+            // //            '/\s+(?![^<>]*>)/x' => '',
         ];
         $commentRules = [
             "/<!--.*?-->/ms" => '',// Remove all html comment.,

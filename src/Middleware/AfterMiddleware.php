@@ -270,7 +270,7 @@ EOF;
                     if (isset($matches[2]) && !empty($matches[2])) {
                         $hunter = new HunterObfuscator($matches[2]);
                         $obsfucated = $hunter->Obfuscate();
-                        return '<script' . $matches[1] . '>' . $matches[2] . '</script>';
+                        return '<script' . $matches[1] . '>' . $obsfucated . '</script>';
                     } else {
                         return '<script' . $matches[1] . '></script>';
                     }

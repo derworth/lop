@@ -16,6 +16,9 @@ return [
     // Do we are debug the data
     'debug' => env('VRKANSAGARA_COMPRESS_DEBUG', false),
 
+    // Do we are obfuscate inline js
+    'obfuscate' => env('VRKANSAGARA_COMPRESS_OBFUSCATE', false),
+
     // In which environment compression work.
     'target_environment' => env('VRKANSAGARA_COMPRESS_ENVIRONMENT', ''),
 

@@ -44,13 +44,13 @@ class AfterMiddleware
      */
     public function handle($request, Closure $next)
     {
-        if (! $this->isCurrentRouteAllowedToCompress($request)) {
+        if (!$this->isCurrentRouteAllowedToCompress($request)) {
             return $next($request);
         }
-        if (! $this->laraOutPress->isEnabled()) {
+        if (!$this->laraOutPress->isEnabled()) {
             return $next($request);
         }
-        
+
         if ($request->expectsJson()) {
             return $next($request);
         }
@@ -69,7 +69,7 @@ class AfterMiddleware
             $this->bufferOldSize = strlen($buffer);
         }
 
-        if (! in_array($appEnvironment, $targetEnvironment)) {
+        if (!in_array($appEnvironment, $targetEnvironment)) {
             return $next($request);
         }
 
@@ -105,7 +105,7 @@ class AfterMiddleware
             // //            '/\s+(?![^<>]*>)/x' => '',
         ];
         $commentRules = [
-            "/<!--.*?-->/ms" => '',// Remove all html comment.,
+            "/<!--.*?-->/ms" => '', // Remove all html comment.,
         ];
         $replaceWords = [
             //OldWord will be replaced by the NewWord
@@ -224,7 +224,7 @@ EOF;
             // remove comments from ' strings
             '#\"([^\n\"]*?)/\*([^\n\"]*)\"#' => '"\1/"+\'\'+"*\2"',
             // remove comments from " strings
-            '#/\*.*?\*/#s' => "",// strip C style comments
+            '#/\*.*?\*/#s' => "", // strip C style comments
             '#[\r\n]+#' => "\n",
             // remove blank lines and \r's
             '#\n([ \t]*//.*?\n)*#s' => "\n",
@@ -232,8 +232,8 @@ EOF;
             '#([^\\])//([^\'"\n]*)\n#s' => "\\1\n",
             // strip line comments
             // (that aren't possibly in strings or regex's)
-            '#\n\s+#' => "\n",// strip excess whitespace
-            '#\s+\n#' => "\n",// strip excess whitespace
+            '#\n\s+#' => "\n", // strip excess whitespace
+            '#\s+\n#' => "\n", // strip excess whitespace
             '#(//[^\n]*\n)#s' => "\\1\n",
             // extra line feed after any comments left
             // (important given later replacements)
@@ -262,11 +262,20 @@ EOF;
         ];
         $script = str_replace(array_keys($replace), $replace, $script);
 
-        if(strpos($script, '</script>') !== false) {
-            $input = preg_replace_callback('#<script(.*?)>(.*?)</script>#is', function($matches) {
-                $hunter = new HunterObfuscator($matches[2]);
-                return '<script' . $matches[1] .'>'. $hunter . '</script>';
-            }, $script);
+        $config = $this->laraOutPress->getConfig();
+
+        if ($config['obfuscate']) {
+            if (strpos($script, '</script>') !== false) {
+                $script = preg_replace_callback('#<script(.*?)>(.*?)</script>#is', function ($matches) {
+                    if (isset($matches[2]) && !empty($matches[2])) {
+                        $hunter = new HunterObfuscator($matches[2]);
+                        $obsfucated = $hunter->Obfuscate();
+                        return '<script' . $matches[1] . '>' . $matches[2] . '</script>';
+                    } else {
+                        return '<script' . $matches[1] . '></script>';
+                    }
+                }, $script);
+            }
         }
 
         return trim($script);
@@ -281,7 +290,7 @@ EOF;
     {
         $config = $this->laraOutPress->getConfig();
 
-        if (! is_array($config['exclude_routes'])) {
+        if (!is_array($config['exclude_routes'])) {
             // If configuration has no route(s) data or is empty then we will not compress any data
             return false;
         }

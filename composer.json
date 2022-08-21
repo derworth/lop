@@ -20,7 +20,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Vrkansagara\\LaraOutPress\\": "src/"
+            "Vrkansagara\\LaraOutPress\\": "src/",
+            "Vrkansagara\\HunterObfuscator\\": "src/"
         }
     },
     "autoload-dev": {

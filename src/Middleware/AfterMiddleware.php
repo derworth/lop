@@ -7,6 +7,7 @@ namespace Vrkansagara\LaraOutPress\Middleware;
 use Closure;
 use Illuminate\Support\Facades\Request;
 use Vrkansagara\LaraOutPress\LaraOutPress;
+use Vrkansagara\HunterObfuscator\HunterObfuscator;
 
 class AfterMiddleware
 {
@@ -71,6 +72,18 @@ class AfterMiddleware
         if (! in_array($appEnvironment, $targetEnvironment)) {
             return $next($request);
         }
+
+        if ($this->isJSON($buffer)) {
+            $response->setContent($buffer);
+            ini_set('pcre.recursion_limit', '16777');
+            ini_set(
+                'zlib.output_compression',
+                '4096'
+            ); // Some browser cant get content type.
+            ini_set('zlib.output_compression_level', '-1'); // Let server decide.
+            return $response;
+        }
+
         $whiteSpaceRules = [
             // '/(\s)+/s' => '\\1',// shorten multiple whitespace sequences
             // "#>\s+<#" => ">\n<",  // Strip excess whitespace using new line
@@ -189,6 +202,11 @@ EOF;
         return $new_buffer;
     }
 
+    public function isJSON($string)
+    {
+        return is_string($string) && is_array(json_decode($string, true)) && (json_last_error() == JSON_ERROR_NONE) ? true : false;
+    }
+
     public function formatSizeUnits($size)
     {
         $base = log($size) / log(1024);
@@ -243,6 +261,13 @@ EOF;
             "\n\n" => "\n",
         ];
         $script = str_replace(array_keys($replace), $replace, $script);
+
+        if(strpos($script, '</script>') !== false) {
+            $input = preg_replace_callback('#<script(.*?)>(.*?)</script>#is', function($matches) {
+                $hunter = new HunterObfuscator($matches[2]);
+                return '<script' . $matches[1] .'>'. $hunter . '</script>';
+            }, $script);
+        }
 
         return trim($script);
     }

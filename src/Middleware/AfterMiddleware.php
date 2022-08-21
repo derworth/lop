@@ -85,9 +85,9 @@ class AfterMiddleware
         }
 
         $whiteSpaceRules = [
-            '/(\s)+/s' => '\\1',// shorten multiple whitespace sequences
-            "#>\s+<#" => ">\n<",  // Strip excess whitespace using new line
-            "#\n\s+<#" => "\n<",// strip excess whitespace using new line
+            // '/(\s)+/s' => '\\1',// shorten multiple whitespace sequences
+            // "#>\s+<#" => ">\n<",  // Strip excess whitespace using new line
+            // "#\n\s+<#" => "\n<",// strip excess whitespace using new line
             // '/\>[^\S ]+/s' => '>',
             // Strip all whitespaces after tags, except space
             // '/[^\S ]+\</s' => '<',// strip whitespaces before tags, except space

@@ -85,27 +85,28 @@ class AfterMiddleware
         }
 
         $whiteSpaceRules = [
-            // '/(\s)+/s' => '\\1',// shorten multiple whitespace sequences
-            // "#>\s+<#" => ">\n<",  // Strip excess whitespace using new line
-            // "#\n\s+<#" => "\n<",// strip excess whitespace using new line
+            '/(\s)+/s' => '\\1',// shorten multiple whitespace sequences
+            "#>\s+<#" => ">\n<",  // Strip excess whitespace using new line
+            "#\n\s+<#" => "\n<",// strip excess whitespace using new line
             // '/\>[^\S ]+/s' => '>',
-            // // Strip all whitespaces after tags, except space
+            // Strip all whitespaces after tags, except space
             // '/[^\S ]+\</s' => '<',// strip whitespaces before tags, except space
-            // /**
-            //  * '/\s+     # Match one or more whitespace characters
-            //  * (?!       # but only if it is impossible to match...
-            //  * [^<>]*   # any characters except angle brackets
-            //  * >        # followed by a closing bracket.
-            //  * )         # End of lookahead
-            //  * /x',
-            //  */
+            /**
+             * '/\s+     # Match one or more whitespace characters
+             * (?!       # but only if it is impossible to match...
+             * [^<>]*   # any characters except angle brackets
+             * >        # followed by a closing bracket.
+             * )         # End of lookahead
+             * /x',
+             */
 
             // //Remove all whitespaces except content between html tags.
             // //MOST DANGEROUS
             // //            '/\s+(?![^<>]*>)/x' => '',
         ];
         $commentRules = [
-            "/<!--.*?-->/ms" => '', // Remove all html comment.,
+            // "/<!--.*?-->/ms" => '', // Remove all html comment.,
+            // "/<!--(.|\s)*?-->/" => '', // Remove all html comment.,
         ];
         $replaceWords = [
             //OldWord will be replaced by the NewWord
@@ -118,6 +119,21 @@ class AfterMiddleware
             $whiteSpaceRules
         );
         $buffer = $this->compressJscript($buffer);
+
+        if ($config['obfuscate']) {
+            if (strpos($buffer, '</script>') !== false) {
+                $buffer = preg_replace_callback('#<script(.*?)>(.*?)</script>#is', function ($matches) {
+                    if (isset($matches[2]) && !empty($matches[2]) && strpos($matches[1], 'flc') !== false) {
+                        $hunter = new HunterObfuscator($matches[2]);
+                        $obsfucated = $hunter->Obfuscate();
+                        return '<script' . $matches[1] . '>' . $obsfucated . '</script>';
+                    } else {
+                        return '<script' . $matches[1] . '>' . $matches[2] . '</script>';
+                    }
+                }, $buffer);
+            }
+        }
+
         $buffer = preg_replace(
             array_keys($allRules),
             array_values($allRules),
@@ -261,22 +277,6 @@ EOF;
             "\n\n" => "\n",
         ];
         $script = str_replace(array_keys($replace), $replace, $script);
-
-        $config = $this->laraOutPress->getConfig();
-
-        if ($config['obfuscate']) {
-            if (strpos($script, '</script>') !== false) {
-                $script = preg_replace_callback('#<script(.*?)>(.*?)</script>#is', function ($matches) {
-                    if (isset($matches[2]) && !empty($matches[2])) {
-                        $hunter = new HunterObfuscator($matches[2]);
-                        $obsfucated = $hunter->Obfuscate();
-                        return '<script' . $matches[1] . '>' . $obsfucated . '</script>';
-                    } else {
-                        return '<script' . $matches[1] . '></script>';
-                    }
-                }, $script);
-            }
-        }
 
         return trim($script);
     }

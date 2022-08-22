@@ -44,6 +44,10 @@ class AfterMiddleware
      */
     public function handle($request, Closure $next)
     {
+        if(strpos(Request::getPathInfo(), '.')) {
+            return $next($request);
+        }
+        
         if (!$this->isCurrentRouteAllowedToCompress($request)) {
             return $next($request);
         }
